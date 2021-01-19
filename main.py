@@ -9,15 +9,19 @@ import requests
 
 from selectolax.parser import HTMLParser
 
-from cameras.models import IpCamera
-from recorder.models import IpRecorder
+from cameras.models import IpCamera, AnalogCamera, HDCVICamera
+from recorder.models import IpRecorder, AnalogRecorder, HDCVIRecorder
 
 SHORT_TIME = 5
 LONG_TIME = 20
 
 ADDRESSES = {
     'IpCamera': 'https://www.eltrox.pl/monitoring/monitoring-ip/kamery-ip.html?dir=desc&order=name',
-    'IpRecorder': 'https://www.eltrox.pl/monitoring/monitoring-ip/rejestratory-ip.html?dir=desc&order=name'
+    'IpRecorder': 'https://www.eltrox.pl/monitoring/monitoring-ip/rejestratory-ip.html?dir=desc&order=name',
+    'AnalogCamera': 'https://www.eltrox.pl/monitoring/monitoring-analogowy/kamery-analogowe.html?dir=desc&order=name',
+    'AnalogRecorder': 'https://www.eltrox.pl/monitoring/monitoring-analogowy/rejestratory-analogowe.html?dir=desc&order=name',
+    'HDCVICamera': 'https://www.eltrox.pl/monitoring/monitoring-hdcvi/kamery-hdcvi.html?dir=desc&order=name',
+    'HDCVIRecorder': 'https://www.eltrox.pl/monitoring/monitoring-hdcvi/rejestrator-hdcvi.html?dir=desc&order=name',
 }
 
 connection = connections.create_connection(hosts=['127.0.0.1:9200'], timeout=20)
@@ -28,7 +32,7 @@ for k, v in ADDRESSES.items():
         start = time.time()
         docs = []
         tree = HTMLParser(response.content)
-        count_pages = int(tree.css('.button.last')[0].text())
+        count_pages = int(tree.css('.button.last')[0].text()) if len(tree.css('.button.last')) > 0 else 2
         for idx, _ in enumerate(range(count_pages)):
             tree = HTMLParser(response.content)
             items_on_page = tree.css('.item')
@@ -57,6 +61,8 @@ for k, v in ADDRESSES.items():
                         'network_protocols': item_spec[
                             'Wspierane protokoły sieciowe'] if 'Wspierane protokoły sieciowe' in item_spec else None,
                         'price': price,
+                        'power': item_spec['Zasilanie kamery'] if 'Zasilanie kamery' in item_spec else None,
+                        'housing_type': item_spec['Typ obudowy'] if 'Typ obudowy' in item_spec else None,
                         'add_date': datetime.now(),
                         'meta': {'id': item_spec['Numer katalogowy']}
                     }
@@ -70,4 +76,3 @@ for k, v in ADDRESSES.items():
         print('\n')
         print(f'It takes {end - start}')
 
-# list_of_cameras = go_through_every_item_on_site()

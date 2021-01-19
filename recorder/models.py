@@ -22,3 +22,17 @@ class IpRecorder(Recorder):
         name = 'eltrox-recorder-ip'
         settings = {'number_of_shard': 1,
                     }
+
+
+class AnalogRecorder(Recorder):
+    class Index:
+        name = 'eltrox-recorder-analog'
+        settings = {'number_of_shard': 1,
+                    }
+
+
+class HDCVIRecorder(Recorder):
+    class Index:
+        name = 'eltrox-recorder-hdcvi'
+        settings = {'number_of_shard': 1,
+                    }

@@ -7,6 +7,8 @@ class Camera(BaseModel):
     type = Keyword()
     resolution = Keyword()
     ip = Keyword()
+    power = Keyword()
+    housing_type = Keyword()
 
     class Index:
         name = 'eltrox-camera'
@@ -20,5 +22,19 @@ class IpCamera(Camera):
 
     class Index:
         name = 'eltrox-camera-ip'
+        settings = {'number_of_shard': 1,
+                    }
+
+
+class AnalogCamera(Camera):
+    class Index:
+        name = 'eltrox-camera-analog'
+        settings = {'number_of_shard': 1,
+                    }
+
+
+class HDCVICamera(Camera):
+    class Index:
+        name = 'eltrox-camera-hdcvi'
         settings = {'number_of_shard': 1,
                     }
