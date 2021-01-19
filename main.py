@@ -24,7 +24,7 @@ ADDRESSES = {
     'HDCVIRecorder': 'https://www.eltrox.pl/monitoring/monitoring-hdcvi/rejestrator-hdcvi.html?dir=desc&order=name',
 }
 
-connection = connections.create_connection(hosts=['127.0.0.1:9200'], timeout=20)
+connection = connections.create_connection(hosts=['192.168.1.160:9200'], timeout=20)
 for k, v in ADDRESSES.items():
     current_model = eval(k)
     response = requests.get(v)
