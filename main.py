@@ -11,20 +11,22 @@ from selectolax.parser import HTMLParser
 
 from cameras.models import IpCamera, AnalogCamera, HDCVICamera
 from recorder.models import IpRecorder, AnalogRecorder, HDCVIRecorder
+from motion_detector.models import SingleMotionDetector
 
 SHORT_TIME = 5
 LONG_TIME = 20
 
 ADDRESSES = {
-    'IpCamera': 'https://www.eltrox.pl/monitoring/monitoring-ip/kamery-ip.html?dir=desc&order=name',
-    'IpRecorder': 'https://www.eltrox.pl/monitoring/monitoring-ip/rejestratory-ip.html?dir=desc&order=name',
-    'AnalogCamera': 'https://www.eltrox.pl/monitoring/monitoring-analogowy/kamery-analogowe.html?dir=desc&order=name',
-    'AnalogRecorder': 'https://www.eltrox.pl/monitoring/monitoring-analogowy/rejestratory-analogowe.html?dir=desc&order=name',
-    'HDCVICamera': 'https://www.eltrox.pl/monitoring/monitoring-hdcvi/kamery-hdcvi.html?dir=desc&order=name',
-    'HDCVIRecorder': 'https://www.eltrox.pl/monitoring/monitoring-hdcvi/rejestrator-hdcvi.html?dir=desc&order=name',
+    # 'IpCamera': 'https://www.eltrox.pl/monitoring/monitoring-ip/kamery-ip.html?dir=desc&order=name',
+    # 'IpRecorder': 'https://www.eltrox.pl/monitoring/monitoring-ip/rejestratory-ip.html?dir=desc&order=name',
+    # 'AnalogCamera': 'https://www.eltrox.pl/monitoring/monitoring-analogowy/kamery-analogowe.html?dir=desc&order=name',
+    # 'AnalogRecorder': 'https://www.eltrox.pl/monitoring/monitoring-analogowy/rejestratory-analogowe.html?dir=desc&order=name',
+    # 'HDCVICamera': 'https://www.eltrox.pl/monitoring/monitoring-hdcvi/kamery-hdcvi.html?dir=desc&order=name',
+    # 'HDCVIRecorder': 'https://www.eltrox.pl/monitoring/monitoring-hdcvi/rejestrator-hdcvi.html?dir=desc&order=name',
+    'SingleMotionDetector': 'https://www.eltrox.pl/systemy-alarmowe/czujniki/czujniki-pir.html?dir=asc&order=name',
 }
 
-connection = connections.create_connection(hosts=['192.168.1.160:9200'], timeout=20)
+connection = connections.create_connection(hosts=['192.168.1.160:9300'], timeout=20)
 for k, v in ADDRESSES.items():
     current_model = eval(k)
     response = requests.get(v)
@@ -42,7 +44,7 @@ for k, v in ADDRESSES.items():
                 link_to_product = item.css('.product-name')[0].child.next.attributes['href']
                 product = requests.get(link_to_product)
                 product_tree = HTMLParser(product.content)
-                price_list = product_tree.css_first('.l-v2-price').text().split('\xa0', 4)
+                price_list = product_tree.css_first('.l-v2-price').text().split('\xa0', 4) if product_tree.css_first('.l-v2-price') else "0"
                 price = price_list[0] if len(price_list) < 3 else ''.join([_ for _ in price_list[:-1]])
                 table = product_tree.css('#product-attribute-specs-table')[0]
                 labels = table.css('.label')
@@ -57,12 +59,19 @@ for k, v in ADDRESSES.items():
                         'type': item_spec['Typ kamery'] if 'Typ kamery' in item_spec else None,
                         'resolution': item_spec['Rozdzielczość'] if 'Rozdzielczość' in item_spec else None,
                         'ip': item_spec['Klasa szczelności'] if 'Klasa szczelności' in item_spec else None,
-                        'networ_interface': item_spec['Interfejs sieciowy'] if 'Interfejs sieciowy' in item_spec else None,
+                        'networ_interface': item_spec[
+                            'Interfejs sieciowy'] if 'Interfejs sieciowy' in item_spec else None,
                         'network_protocols': item_spec[
                             'Wspierane protokoły sieciowe'] if 'Wspierane protokoły sieciowe' in item_spec else None,
                         'price': price,
                         'power': item_spec['Zasilanie kamery'] if 'Zasilanie kamery' in item_spec else None,
                         'housing_type': item_spec['Typ obudowy'] if 'Typ obudowy' in item_spec else None,
+                        'detector_range': item_spec[
+                            'Zasięg detekcji czujnika'] if 'Zasięg detekcji czujnika' in item_spec else None,
+                        'detection_type': item_spec['Rodzaj detekcji'] if 'Rodzaj detekcji' in item_spec else None,
+                        'optic_type': item_spec['Rodzaj optyki'] if 'Rodzaj optyki' in item_spec else None,
+                        'max_current_consumption': item_spec[
+                            'Maksymalny pobór prądu'] if 'Maksymalny pobór prądu' in item_spec else None,
                         'add_date': datetime.now(),
                         'meta': {'id': item_spec['Numer katalogowy']}
                     }
@@ -75,4 +84,3 @@ for k, v in ADDRESSES.items():
         end = time.time()
         print('\n')
         print(f'It takes {end - start}')
-

@@ -6,7 +6,7 @@ from base_model.base_model import BaseModel
 class MotionDetector(BaseModel):
     detector_range = Keyword()
     detection_type = Keyword()
-    installation_place = Keyword()
+   # installation_place = Keyword()
     optic_type = Keyword()
     max_current_consumption = Keyword()
 
